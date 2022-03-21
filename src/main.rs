@@ -22,24 +22,26 @@ struct CPU {
     keypad_state: [bool; 16],
 }
 
-fn initialize_cpu() -> CPU {
-    CPU {
-        opcode: 0,
-        memory: [0; 4096],
-        v_registers: [0; 16],
-        index_register: 0,
-        program_counter: 0,
-        frame_buffer: [false; 64 * 32],
-        delay_timer: 0,
-        sound_timer: 0,
-        stack: [0; 16],
-        stack_pointer: 0,
-        keypad_state: [false; 16],
+impl CPU {
+    fn initialize() -> CPU {
+        CPU {
+            opcode: 0,
+            memory: [0; 4096],
+            v_registers: [0; 16],
+            index_register: 0,
+            program_counter: 0,
+            frame_buffer: [false; 64 * 32],
+            delay_timer: 0,
+            sound_timer: 0,
+            stack: [0; 16],
+            stack_pointer: 0,
+            keypad_state: [false; 16],
+        }
     }
 }
 
 fn main() {
-    let cpu = initialize_cpu();
+    let cpu = CPU::initialize();
 
     println!("Hello, world!");
 }
