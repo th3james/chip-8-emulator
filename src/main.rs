@@ -1,25 +1,45 @@
-fn main() {
+struct CPU {
     // opcodes are two bytes
-    let _opcode: u16;
+    opcode: u16,
     // CHIP-8 has 4k memory
-    let _memory: [u8; 4096];
+    memory: [u8; 4096],
 
-    let _v_registers: [u8; 16];
-    let _index_register: u16;
-    let _program_counter: u16;
+    v_registers: [u8; 16],
+    index_register: u16,
+    program_counter: u16,
 
     // 64 x 32 resolution black & white pixels
-    let _frame_buffer: [bool; 64 * 32];
+    frame_buffer: [bool; 64 * 32],
 
     // These decrement on each cycle
-    let _delay_timer: u8;
-    let _sound_timer: u8;
+    delay_timer: u8,
+    sound_timer: u8,
 
     // stack for handling jumps
-    let _stack: [u16; 16];
-    let _stack_pointer: u16;
+    stack: [u16; 16],
+    stack_pointer: u16,
 
-    let _keypad_state: [bool; 16]
+    keypad_state: [bool; 16],
+}
+
+fn initialize_cpu() -> CPU {
+    CPU {
+        opcode: 0,
+        memory: [0; 4096],
+        v_registers: [0; 16],
+        index_register: 0,
+        program_counter: 0,
+        frame_buffer: [false; 64 * 32],
+        delay_timer: 0,
+        sound_timer: 0,
+        stack: [0; 16],
+        stack_pointer: 0,
+        keypad_state: [false; 16],
+    }
+}
+
+fn main() {
+    let cpu = initialize_cpu();
 
     println!("Hello, world!");
 }
