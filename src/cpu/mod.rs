@@ -39,3 +39,13 @@ impl CPU {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_initialize_zeros_program_counter() {
+        assert_eq!(CPU::initialize().program_counter, 0);
+    }
+}
