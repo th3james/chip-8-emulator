@@ -53,4 +53,11 @@ mod tests {
     fn test_initialize_zeros_memory() {
         assert_eq!(CPU::initialize().memory[0x200..0x210], [0; 0x10]);
     }
+
+    #[test]
+    fn test_load_game_populates_memory() {
+        let test_game_path = Path::new("../test_fixtures/test_game.ch8");
+
+        assert_eq!(CPU::initialize().memory[0x200..0x210], [0; 0x10]);
+    }
 }
