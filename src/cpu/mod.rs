@@ -29,7 +29,7 @@ impl CPU {
             memory: [0; 4096],
             v_registers: [0; 16],
             index_register: 0,
-            program_counter: 0,
+            program_counter: 0x200,
             frame_buffer: [false; 64 * 32],
             delay_timer: 0,
             sound_timer: 0,
@@ -45,7 +45,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_initialize_zeros_program_counter() {
-        assert_eq!(CPU::initialize().program_counter, 0);
+    fn test_initialize_resets_program_counter() {
+        assert_eq!(CPU::initialize().program_counter, 0x200);
+    }
+
+    #[test]
+    fn test_initialize_zeros_memory() {
+        assert_eq!(CPU::initialize().memory[0x200..0x210], [0; 0x10]);
     }
 }
