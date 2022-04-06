@@ -41,6 +41,8 @@ impl CPU {
             keypad_state: [false; 16],
         }
     }
+
+    fn load_game(&self) {}
 }
 
 #[cfg(test)]
