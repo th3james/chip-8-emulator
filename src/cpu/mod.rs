@@ -1,3 +1,6 @@
+use std::fs;
+use std::path::Path;
+
 pub struct CPU {
     // opcodes are two bytes
     opcode: u16,
@@ -56,8 +59,22 @@ mod tests {
 
     #[test]
     fn test_load_game_populates_memory() {
-        let test_game_path = Path::new("../test_fixtures/test_game.ch8");
+        let test_game_path = Path::new("./test_fixtures/test_game.ch8");
 
-        assert_eq!(CPU::initialize().memory[0x200..0x210], [0; 0x10]);
+        let file_contents = fs::read(test_game_path).expect(
+            format!(
+                "Couldn't read test fixture {}",
+                test_game_path.canonicalize().unwrap().display()
+            )
+            .as_str(),
+        );
+
+        let cpu = CPU::initialize();
+        cpu.load_game(test_game_path);
+
+        assert_eq!(
+            cpu.memory[0x200..0x210 + file_contents.len()],
+            file_contents
+        );
     }
 }
