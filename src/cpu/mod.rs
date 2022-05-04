@@ -1,4 +1,6 @@
 use std::fs;
+use std::fs::File;
+use std::io::Read;
 use std::path::Path;
 
 pub struct CPU {
@@ -42,7 +44,17 @@ impl CPU {
         }
     }
 
-    fn load_game(&self) {}
+    fn load_game(&mut self, file_path: &Path) {
+        let mut game_file = File::open(file_path).expect(
+            format!(
+                "Couldn't open file {}",
+                file_path.canonicalize().unwrap().display()
+            )
+            .as_str(),
+        );
+
+        game_file.read(&mut self.memory[0x200..]);
+    }
 }
 
 #[cfg(test)]
@@ -71,7 +83,7 @@ mod tests {
             .as_str(),
         );
 
-        let cpu = CPU::initialize();
+        let mut cpu = CPU::initialize();
         cpu.load_game(test_game_path);
 
         assert_eq!(
