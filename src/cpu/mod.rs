@@ -44,7 +44,7 @@ impl CPU {
         }
     }
 
-    fn load_game(&mut self, file_path: &Path) {
+    pub fn load_game(&mut self, file_path: &Path) {
         let mut game_file = File::open(file_path).expect(
             format!(
                 "Couldn't open file {}",
