@@ -87,7 +87,7 @@ mod tests {
         cpu.load_game(test_game_path);
 
         assert_eq!(
-            cpu.memory[0x200..0x210 + file_contents.len()],
+            cpu.memory[0x200..(0x200 + file_contents.len())],
             file_contents
         );
     }
