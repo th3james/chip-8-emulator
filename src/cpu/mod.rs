@@ -44,7 +44,11 @@ impl CPU {
         }
     }
 
-    pub fn load_game(&mut self, file_path: &Path) {
+    pub fn load_game(&mut self, game: &mut dyn Read) {
+        game.read(&mut self.memory[0x200..]);
+    }
+
+    pub fn load_game_from_file(&mut self, file_path: &Path) {
         let mut game_file = File::open(file_path).expect(
             format!(
                 "Couldn't open file {}",
@@ -53,7 +57,7 @@ impl CPU {
             .as_str(),
         );
 
-        game_file.read(&mut self.memory[0x200..]);
+        self.load_game(&mut game_file);
     }
 }
 
@@ -72,7 +76,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_game_populates_memory() {
+    fn test_load_game_from_file_populates_memory() {
         let test_game_path = Path::new("./test_fixtures/test_game.ch8");
 
         let file_contents = fs::read(test_game_path).expect(
@@ -84,7 +88,7 @@ mod tests {
         );
 
         let mut cpu = CPU::initialize();
-        cpu.load_game(test_game_path);
+        cpu.load_game_from_file(test_game_path);
 
         assert_eq!(
             cpu.memory[0x200..(0x200 + file_contents.len())],
