@@ -49,10 +49,20 @@ impl CPU {
     }
 
     pub fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error> {
+        let read_count: usize;
         // TODO After reading take, try reading more - input buffer should be consumed
         match game.take(MAX_GAME_SIZE as u64).read(&mut self.memory[APPLICATION_START_ADDRESS..]) {
-           Err(e) => Err(e),
-           Ok(_s) => Ok(()),
+           Err(e) => return Err(e),
+           Ok(c) => read_count = c,
+        };
+        // If we have filled the memory, see if there's more to read
+        if read_count == MAX_GAME_SIZE {
+            match game.take(1).read(&mut [0, 1]) {
+               Err(_e) => Ok(()), // Should be no more data to read
+               Ok(_c) => Err(std::io::Error::new(std::io::ErrorKind::Other, "Input game too big, is this a CHIP-8 game?"))
+            }
+        } else {
+            Ok(())
         }
     }
 
@@ -110,8 +120,8 @@ mod tests {
         struct FakeReader;
 
         impl std::io::Read for FakeReader {
-            fn read(&mut self, buf: &mut [u8]) -> Result<usize, std::io::Error> {
-                Ok(1)
+            fn read(&mut self, _buf: &mut [u8]) -> Result<usize, std::io::Error> {
+                Ok(MAX_GAME_SIZE)
             }
         }
         let mut fake_reader = FakeReader{};
