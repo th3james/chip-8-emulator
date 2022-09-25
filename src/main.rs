@@ -9,4 +9,7 @@ fn main() {
     cpu.load_game_from_file(Path::new("./test_fixtures/test_game.ch8"));
 
     println!("Game loaded successfully");
+
+    cpu.start_emulation();
+
 }

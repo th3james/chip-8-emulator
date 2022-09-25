@@ -77,6 +77,14 @@ impl CPU {
 
         self.load_game(&mut game_file)
     }
+
+    pub fn emulate_cycle(&mut self) {
+        println!("TODO: Emulation");
+    }
+
+    pub fn start_emulation(&mut self) {
+        self.emulate_cycle();
+    }
 }
 
 #[cfg(test)]
