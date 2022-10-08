@@ -1,4 +1,3 @@
-use std::fs;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -78,8 +77,14 @@ impl CPU {
         self.load_game(&mut game_file)
     }
 
+    pub fn fetch_next_opcode(&mut self) -> u16 {
+        (self.memory[self.program_counter as usize] as u16) << 8
+            | self.memory[(self.program_counter + 1) as usize] as u16
+    }
+
     pub fn emulate_cycle(&mut self) {
-        println!("TODO: Emulation");
+        self.opcode = self.fetch_next_opcode();
+        println!("Opcode: {:x}", self.opcode);
     }
 
     pub fn start_emulation(&mut self) {
@@ -105,7 +110,7 @@ mod tests {
     fn test_load_game_from_file_populates_memory() {
         let test_game_path = Path::new("./test_fixtures/test_game.ch8");
 
-        let file_contents = fs::read(test_game_path).expect(
+        let file_contents = std::fs::read(test_game_path).expect(
             format!(
                 "Couldn't read test fixture {}",
                 test_game_path.canonicalize().unwrap().display()
@@ -136,5 +141,28 @@ mod tests {
 
         let mut cpu = CPU::initialize();
         assert!(cpu.load_game(&mut fake_reader).is_err())
+    }
+
+    #[test]
+    fn test_fetch_opcode() {
+        // see "fetch opcode" in https://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
+        let mut cpu = CPU::initialize();
+        let fake_game = vec![0xA2, 0xF0];
+        let mut game_cursor = std::io::Cursor::new(fake_game);
+        cpu.load_game(&mut game_cursor);
+
+        assert_eq!(cpu.fetch_next_opcode(), 0xA2F0);
+    }
+
+    #[test]
+    fn test_emulate_cycle_loads_next_opcode() {
+        let mut cpu = CPU::initialize();
+        let fake_game = vec![0xA2, 0xF0];
+        let mut game_cursor = std::io::Cursor::new(fake_game);
+        cpu.load_game(&mut game_cursor);
+
+        cpu.emulate_cycle();
+
+        assert_eq!(cpu.opcode, 0xA2F0);
     }
 }
