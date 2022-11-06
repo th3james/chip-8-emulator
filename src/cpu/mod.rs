@@ -7,6 +7,7 @@ const CHIP_8_MEMORY_SIZE: usize = 4096;
 const APPLICATION_START_ADDRESS: usize = 0x200;
 const MAX_GAME_SIZE: usize = (CHIP_8_MEMORY_SIZE - APPLICATION_START_ADDRESS) as usize;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CPU {
     // opcodes are two bytes
     opcode: u16,
@@ -50,22 +51,28 @@ impl CPU {
     pub fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error> {
         let read_count: usize;
         // TODO After reading take, try reading more - input buffer should be consumed
-        match game.take(MAX_GAME_SIZE as u64).read(&mut self.memory[APPLICATION_START_ADDRESS..]) {
-           Err(e) => return Err(e),
-           Ok(c) => read_count = c,
+        match game
+            .take(MAX_GAME_SIZE as u64)
+            .read(&mut self.memory[APPLICATION_START_ADDRESS..])
+        {
+            Err(e) => return Err(e),
+            Ok(c) => read_count = c,
         };
         // If we have filled the memory, see if there's more to read
         if read_count == MAX_GAME_SIZE {
             match game.take(1).read(&mut [0, 1]) {
-               Err(_e) => Ok(()), // Should be no more data to read
-               Ok(_c) => Err(std::io::Error::new(std::io::ErrorKind::Other, "Input game too big, is this a CHIP-8 game?"))
+                Err(_e) => Ok(()), // Should be no more data to read
+                Ok(_c) => Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Input game too big, is this a CHIP-8 game?",
+                )),
             }
         } else {
             Ok(())
         }
     }
 
-    pub fn load_game_from_file(&mut self, file_path: &Path) -> Result<(), std::io::Error>  {
+    pub fn load_game_from_file(&mut self, file_path: &Path) -> Result<(), std::io::Error> {
         let mut game_file = File::open(file_path).expect(
             format!(
                 "Couldn't open file {}",
@@ -80,15 +87,6 @@ impl CPU {
     pub fn fetch_next_opcode(&mut self) -> u16 {
         (self.memory[self.program_counter as usize] as u16) << 8
             | self.memory[(self.program_counter + 1) as usize] as u16
-    }
-
-    pub fn emulate_cycle(&mut self) {
-        self.opcode = self.fetch_next_opcode();
-        println!("Opcode: {:x}", self.opcode);
-    }
-
-    pub fn start_emulation(&mut self) {
-        self.emulate_cycle();
     }
 }
 
@@ -122,7 +120,8 @@ mod tests {
         cpu.load_game_from_file(test_game_path);
 
         assert_eq!(
-            cpu.memory[APPLICATION_START_ADDRESS..(APPLICATION_START_ADDRESS + file_contents.len())],
+            cpu.memory
+                [APPLICATION_START_ADDRESS..(APPLICATION_START_ADDRESS + file_contents.len())],
             file_contents
         );
     }
@@ -137,7 +136,7 @@ mod tests {
                 Ok(MAX_GAME_SIZE)
             }
         }
-        let mut fake_reader = FakeReader{};
+        let mut fake_reader = FakeReader {};
 
         let mut cpu = CPU::initialize();
         assert!(cpu.load_game(&mut fake_reader).is_err())
@@ -152,17 +151,5 @@ mod tests {
         cpu.load_game(&mut game_cursor);
 
         assert_eq!(cpu.fetch_next_opcode(), 0xA2F0);
-    }
-
-    #[test]
-    fn test_emulate_cycle_loads_next_opcode() {
-        let mut cpu = CPU::initialize();
-        let fake_game = vec![0xA2, 0xF0];
-        let mut game_cursor = std::io::Cursor::new(fake_game);
-        cpu.load_game(&mut game_cursor);
-
-        cpu.emulate_cycle();
-
-        assert_eq!(cpu.opcode, 0xA2F0);
     }
 }
