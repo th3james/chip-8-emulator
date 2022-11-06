@@ -84,7 +84,7 @@ impl CPU {
         self.load_game(&mut game_file)
     }
 
-    pub fn fetch_next_opcode(&mut self) -> u16 {
+    pub fn fetch_current_opcode(&mut self) -> u16 {
         (self.memory[self.program_counter as usize] as u16) << 8
             | self.memory[(self.program_counter + 1) as usize] as u16
     }
@@ -150,6 +150,6 @@ mod tests {
         let mut game_cursor = std::io::Cursor::new(fake_game);
         cpu.load_game(&mut game_cursor);
 
-        assert_eq!(cpu.fetch_next_opcode(), 0xA2F0);
+        assert_eq!(cpu.fetch_current_opcode(), 0xA2F0);
     }
 }

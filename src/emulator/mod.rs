@@ -18,7 +18,7 @@ impl<'a> Emulator<'a> {
     }
 
     pub fn emulate_cycle(&mut self) {
-        let opcode_value = self.cpu.fetch_next_opcode();
+        let opcode_value = self.cpu.fetch_current_opcode();
         let opcode = OpcodeDecoder::decode_opcode(opcode_value);
         println!("Opcode: {:?}", opcode);
     }
@@ -35,12 +35,15 @@ mod tests {
     #[test]
     fn test_emulate_cycle_loads_and_processes_goto_opcode() {
         let mut cpu = CPU::initialize();
-        let fake_game = vec![0xA2, 0xF0];
+        let fake_game = vec![0x10, 0x11];
         let mut game_cursor = std::io::Cursor::new(fake_game);
         cpu.load_game(&mut game_cursor);
 
         let expected_cpu_state = cpu.clone();
-        operators::perform_goto(&expected_cpu_state);
+        operators::perform_goto(
+            &expected_cpu_state,
+            opcode_decoder::OpcodeDecoder::decode_opcode(cpu.fetch_current_opcode()),
+        );
 
         {
             Emulator {
