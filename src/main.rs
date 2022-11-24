@@ -4,7 +4,7 @@ mod cpu;
 mod emulator;
 
 fn main() {
-    let mut cpu = cpu::CPU::initialize();
+    let mut cpu = cpu::Chip8CPU::initialize();
     let mut emulator = emulator::Emulator {
         cpu: &mut cpu,
         opcode_decoder: emulator::opcode_decoder::OpcodeDecoder {},

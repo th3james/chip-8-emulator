@@ -1,14 +1,17 @@
-use std::fs::File;
 use std::io::Read;
-use std::path::Path;
 
 // CHIP-8 has 4k memory
 const CHIP_8_MEMORY_SIZE: usize = 4096;
 const APPLICATION_START_ADDRESS: usize = 0x200;
 const MAX_GAME_SIZE: usize = (CHIP_8_MEMORY_SIZE - APPLICATION_START_ADDRESS) as usize;
 
+pub trait CPU {
+    fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error>;
+    fn fetch_current_opcode(&self) -> u16;
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct CPU {
+pub struct Chip8CPU {
     // opcodes are two bytes
     opcode: u16,
     memory: [u8; CHIP_8_MEMORY_SIZE],
@@ -31,9 +34,9 @@ pub struct CPU {
     keypad_state: [bool; 16],
 }
 
-impl CPU {
-    pub fn initialize() -> CPU {
-        CPU {
+impl Chip8CPU {
+    pub fn initialize() -> Self {
+        Chip8CPU {
             opcode: 0,
             memory: [0; CHIP_8_MEMORY_SIZE as usize],
             v_registers: [0; 16],
@@ -47,8 +50,10 @@ impl CPU {
             keypad_state: [false; 16],
         }
     }
+}
 
-    pub fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error> {
+impl CPU for Chip8CPU {
+    fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error> {
         let read_count: usize;
         // TODO After reading take, try reading more - input buffer should be consumed
         match game
@@ -72,19 +77,7 @@ impl CPU {
         }
     }
 
-    pub fn load_game_from_file(&mut self, file_path: &Path) -> Result<(), std::io::Error> {
-        let mut game_file = File::open(file_path).expect(
-            format!(
-                "Couldn't open file {}",
-                file_path.canonicalize().unwrap().display()
-            )
-            .as_str(),
-        );
-
-        self.load_game(&mut game_file)
-    }
-
-    pub fn fetch_current_opcode(&mut self) -> u16 {
+    fn fetch_current_opcode(&self) -> u16 {
         (self.memory[self.program_counter as usize] as u16) << 8
             | self.memory[(self.program_counter + 1) as usize] as u16
     }
@@ -96,33 +89,34 @@ mod tests {
 
     #[test]
     fn test_initialize_resets_program_counter() {
-        assert_eq!(CPU::initialize().program_counter, 0x200);
+        assert_eq!(Chip8CPU::initialize().program_counter, 0x200);
     }
 
     #[test]
     fn test_initialize_zeros_memory() {
-        assert_eq!(CPU::initialize().memory[0x200..0x210], [0; 0x10]);
+        assert_eq!(Chip8CPU::initialize().memory[0x200..0x210], [0; 0x10]);
     }
 
     #[test]
-    fn test_load_game_from_file_populates_memory() {
-        let test_game_path = Path::new("./test_fixtures/test_game.ch8");
+    fn test_load_game_populates_momeory() {
+        todo!();
+        let fake_game = [0x12, 0x34, 0x56, 0x78];
+        struct FakeReader;
 
-        let file_contents = std::fs::read(test_game_path).expect(
-            format!(
-                "Couldn't read test fixture {}",
-                test_game_path.canonicalize().unwrap().display()
-            )
-            .as_str(),
-        );
+        impl std::io::Read for FakeReader {
+            fn read(&mut self, _buf: &mut [u8]) -> Result<usize, std::io::Error> {
+                Ok(12)
+            }
+        }
+        let mut fake_reader = FakeReader {};
 
-        let mut cpu = CPU::initialize();
-        cpu.load_game_from_file(test_game_path);
+        let mut cpu = Chip8CPU::initialize();
+        cpu.load_game(&mut fake_game).unwrap();
 
         assert_eq!(
             cpu.memory
-                [APPLICATION_START_ADDRESS..(APPLICATION_START_ADDRESS + file_contents.len())],
-            file_contents
+                [APPLICATION_START_ADDRESS..(APPLICATION_START_ADDRESS + fake_game.len())],
+            fake_game
         );
     }
 
