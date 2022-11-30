@@ -8,6 +8,7 @@ const MAX_GAME_SIZE: usize = (CHIP_8_MEMORY_SIZE - APPLICATION_START_ADDRESS) as
 pub trait CPU {
     fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error>;
     fn fetch_current_opcode(&self) -> u16;
+    fn goto(&mut self, address: u16);
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -81,6 +82,10 @@ impl CPU for Chip8CPU {
         (self.memory[self.program_counter as usize] as u16) << 8
             | self.memory[(self.program_counter + 1) as usize] as u16
     }
+
+    fn goto(&mut self, address: u16) {
+        todo!()
+    }
 }
 
 #[cfg(test)]
@@ -99,8 +104,9 @@ mod tests {
 
     #[test]
     fn test_load_game_populates_momeory() {
-        todo!();
-        let fake_game = [0x12, 0x34, 0x56, 0x78];
+        use std::io::Cursor;
+        let fake_game = [1,2,3,4];
+        let mut fake_game_cursor = Cursor::new(fake_game);
         struct FakeReader;
 
         impl std::io::Read for FakeReader {
@@ -111,7 +117,7 @@ mod tests {
         let mut fake_reader = FakeReader {};
 
         let mut cpu = Chip8CPU::initialize();
-        cpu.load_game(&mut fake_game).unwrap();
+        cpu.load_game(&mut fake_game_cursor).unwrap();
 
         assert_eq!(
             cpu.memory
@@ -132,14 +138,14 @@ mod tests {
         }
         let mut fake_reader = FakeReader {};
 
-        let mut cpu = CPU::initialize();
+        let mut cpu = Chip8CPU::initialize();
         assert!(cpu.load_game(&mut fake_reader).is_err())
     }
 
     #[test]
     fn test_fetch_opcode() {
         // see "fetch opcode" in https://multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
-        let mut cpu = CPU::initialize();
+        let mut cpu = Chip8CPU::initialize();
         let fake_game = vec![0xA2, 0xF0];
         let mut game_cursor = std::io::Cursor::new(fake_game);
         cpu.load_game(&mut game_cursor);

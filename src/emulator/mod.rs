@@ -64,10 +64,11 @@ mod tests {
             }
 
             fn fetch_current_opcode(&self) -> u16 { panic!("shouldn't be called") }
+            fn goto(&mut self, _address: u16) { panic!("shouldn't be called") }
         }
 
         let mut cpu = Emulator {
-            cpu: &mut FakeCPU {},
+            cpu: &mut FakeCPU { read_file: vec![] },
             opcode_decoder: OpcodeDecoder::new(),
         };
         cpu.load_game_from_file(test_game_path);
@@ -81,25 +82,34 @@ mod tests {
 
     #[test]
     fn test_emulate_cycle_loads_and_processes_goto_opcode() {
-        let mut cpu = CPU::initialize();
-        let fake_game = vec![0x10, 0x11];
-        let mut game_cursor = std::io::Cursor::new(fake_game);
-        cpu.load_game(&mut game_cursor);
-
-        let expected_cpu_state = cpu.clone();
-        operators::perform_goto(
-            &expected_cpu_state,
-            opcode_decoder::OpcodeDecoder::decode_opcode(cpu.fetch_current_opcode()),
-        );
-
-        {
-            Emulator {
-                cpu: &mut cpu,
-                opcode_decoder: OpcodeDecoder {},
+        struct FakeCPU {
+            received_opcode: Option<u16>,
+        }
+        impl CPU for FakeCPU {
+            fn load_game(&mut self, game_path: &mut dyn Read) -> Result<(), std::io::Error> {
+                panic!("shouldn't be called")
             }
-            .emulate_cycle();
+            fn fetch_current_opcode(&self) -> u16 { 0x1011 }
+            fn goto(&mut self, address: u16) { self.received_opcode = Some(address) }
         }
 
-        assert_eq!(expected_cpu_state, cpu);
+        let mut fake_cpu = FakeCPU {};
+        let expected_goto_address = match opcode_decoder::OpcodeDecoder::decode_opcode(
+            fake_cpu.fetch_current_opcode()
+        ) {
+            opcode_decoder::Opcode::Goto(address) => address,
+            _ => panic!("Expected Goto opcode"),
+        };
+
+        Emulator {
+            cpu: &mut fake_cpu,
+            opcode_decoder: OpcodeDecoder {},
+        }
+        .emulate_cycle();
+
+        assert_eq!(
+            fake_cpu.received_opcode,
+            expected_goto_address
+        );
     }
 }
