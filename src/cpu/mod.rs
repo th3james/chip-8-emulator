@@ -152,4 +152,9 @@ mod tests {
 
         assert_eq!(cpu.fetch_current_opcode(), 0xA2F0);
     }
+
+    #[test]
+    fn test_goto() {
+        todo!()
+    }
 }

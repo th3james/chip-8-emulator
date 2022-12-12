@@ -67,14 +67,17 @@ mod tests {
             fn goto(&mut self, _address: u16) { panic!("shouldn't be called") }
         }
 
-        let mut cpu = Emulator {
-            cpu: &mut FakeCPU { read_file: vec![] },
-            opcode_decoder: OpcodeDecoder::new(),
+        let mut fake_cpu = FakeCPU {
+            read_file: Vec::new(),
         };
-        cpu.load_game_from_file(test_game_path);
+        let mut emulator = Emulator {
+            cpu: &mut fake_cpu,
+            opcode_decoder: OpcodeDecoder {},
+        };
+        emulator.load_game_from_file(test_game_path);
 
         assert_eq!(
-            cpu.cpu.read_file,
+            fake_cpu.read_file,
             file_contents
         );
     }
@@ -93,12 +96,13 @@ mod tests {
             fn goto(&mut self, address: u16) { self.received_opcode = Some(address) }
         }
 
-        let mut fake_cpu = FakeCPU {};
+        let mut fake_cpu = FakeCPU {
+            received_opcode: None,
+        };
         let expected_goto_address = match opcode_decoder::OpcodeDecoder::decode_opcode(
             fake_cpu.fetch_current_opcode()
         ) {
             opcode_decoder::Opcode::Goto(address) => address,
-            _ => panic!("Expected Goto opcode"),
         };
 
         Emulator {
@@ -107,9 +111,9 @@ mod tests {
         }
         .emulate_cycle();
 
-        assert_eq!(
-            fake_cpu.received_opcode,
-            expected_goto_address
-        );
+        match fake_cpu.received_opcode {
+            Some(address) => assert_eq!(address, expected_goto_address),
+            None => panic!("Expected goto opcode to be received"),
+        }
     }
 }
