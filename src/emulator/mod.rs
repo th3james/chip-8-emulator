@@ -31,6 +31,9 @@ impl<'a> Emulator<'a> {
         let opcode_value = self.cpu.fetch_current_opcode();
         let opcode = OpcodeDecoder::decode_opcode(opcode_value);
         println!("Opcode: {:?}", opcode);
+        match opcode {
+            opcode_decoder::Opcode::Goto(address) => self.cpu.goto(address),
+        }
     }
 
     pub fn start_emulation(&mut self) {
