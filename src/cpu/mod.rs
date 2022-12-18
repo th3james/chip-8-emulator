@@ -106,14 +106,6 @@ mod tests {
         use std::io::Cursor;
         let fake_game = [1,2,3,4];
         let mut fake_game_cursor = Cursor::new(fake_game);
-        struct FakeReader;
-
-        impl std::io::Read for FakeReader {
-            fn read(&mut self, _buf: &mut [u8]) -> Result<usize, std::io::Error> {
-                Ok(12)
-            }
-        }
-        let mut fake_reader = FakeReader {};
 
         let mut cpu = Chip8CPU::initialize();
         cpu.load_game(&mut fake_game_cursor).unwrap();
@@ -127,7 +119,6 @@ mod tests {
 
     #[test]
     fn test_load_game_too_long_errors() {
-        // implement readable trait
         struct FakeReader;
 
         impl std::io::Read for FakeReader {
