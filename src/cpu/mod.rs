@@ -56,7 +56,6 @@ impl Chip8CPU {
 impl CPU for Chip8CPU {
     fn load_game(&mut self, game: &mut dyn Read) -> Result<(), std::io::Error> {
         let read_count: usize;
-        // TODO After reading take, try reading more - input buffer should be consumed
         match game
             .take(MAX_GAME_SIZE as u64)
             .read(&mut self.memory[APPLICATION_START_ADDRESS..])
@@ -84,7 +83,7 @@ impl CPU for Chip8CPU {
     }
 
     fn goto(&mut self, address: u16) {
-        todo!()
+        self.program_counter = APPLICATION_START_ADDRESS as u16 + address;
     }
 }
 
@@ -154,7 +153,14 @@ mod tests {
     }
 
     #[test]
-    fn test_goto() {
-        todo!()
+    fn test_goto_moves_program_counter() {
+        let mut cpu = Chip8CPU::initialize();
+        cpu.goto(0x321);
+        assert_eq!(cpu.program_counter, APPLICATION_START_ADDRESS as u16 + 0x321);
+    }
+
+    #[test]
+    fn test_goto_updates_stack_pointer() {
+        todo!();
     }
 }

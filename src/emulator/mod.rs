@@ -37,7 +37,9 @@ impl<'a> Emulator<'a> {
     }
 
     pub fn start_emulation(&mut self) {
-        self.emulate_cycle();
+        while true {
+            self.emulate_cycle();
+        }
     }
 }
 
