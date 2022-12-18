@@ -7,8 +7,6 @@ use super::cpu::CPU;
 pub mod opcode_decoder;
 use opcode_decoder::OpcodeDecoder;
 
-mod operators;
-
 pub struct Emulator<'a> {
     pub cpu: &'a mut dyn CPU,
     pub opcode_decoder: OpcodeDecoder,
