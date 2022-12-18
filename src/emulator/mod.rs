@@ -81,7 +81,7 @@ mod tests {
             cpu: &mut fake_cpu,
             opcode_decoder: OpcodeDecoder {},
         };
-        emulator.load_game_from_file(test_game_path);
+        emulator.load_game_from_file(test_game_path).unwrap();
 
         assert_eq!(
             fake_cpu.read_file,
@@ -96,7 +96,7 @@ mod tests {
             received_opcode: Option<u16>,
         }
         impl CPU for FakeCPU {
-            fn load_game(&mut self, game_path: &mut dyn Read) -> Result<(), std::io::Error> {
+            fn load_game(&mut self, _game_path: &mut dyn Read) -> Result<(), std::io::Error> {
                 panic!("shouldn't be called")
             }
             fn fetch_current_opcode(&self) -> u16 { 0x1011 }

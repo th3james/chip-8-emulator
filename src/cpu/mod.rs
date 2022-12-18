@@ -138,7 +138,7 @@ mod tests {
         let mut cpu = Chip8CPU::initialize();
         let fake_game = vec![0xA2, 0xF0];
         let mut game_cursor = std::io::Cursor::new(fake_game);
-        cpu.load_game(&mut game_cursor);
+        cpu.load_game(&mut game_cursor).unwrap();
 
         assert_eq!(cpu.fetch_current_opcode(), 0xA2F0);
     }
