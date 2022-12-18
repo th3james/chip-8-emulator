@@ -33,6 +33,7 @@ impl<'a> Emulator<'a> {
         println!("Opcode: {:?}", opcode);
         match opcode {
             opcode_decoder::Opcode::Goto(address) => self.cpu.goto(address),
+            opcode_decoder::Opcode::Unhandled(unhandled_opcode) => panic!("Unhandled opcode: {:X}", unhandled_opcode),
         }
     }
 
@@ -108,6 +109,8 @@ mod tests {
             fake_cpu.fetch_current_opcode()
         ) {
             opcode_decoder::Opcode::Goto(address) => address,
+            // TODO default case?
+            opcode_decoder::Opcode::Unhandled(unhandled_opcode) => panic!("Unhandled opcode: {:X}", unhandled_opcode),
         };
 
         Emulator {
